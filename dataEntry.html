@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRC Water Quality Input</title>
+
+    <script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyA3_egJMbPeKz2HgA21gnLdR941Nvjjhow",
+            authDomain: "waterquality-1920b.firebaseapp.com",
+            databaseURL: "https://waterquality-1920b.firebaseio.com",
+            storageBucket: "waterquality-1920b.appspot.com",
+            messagingSenderId: "1029265855891"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.css" />
+
+    <script type="text/javascript">
+        var email = "";
+        initApp = function() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in.
+                    var displayName = user.displayName;
+                    email = user.email;
+                    var emailVerified = user.emailVerified;
+                    var photoURL = user.photoURL;
+                    var uid = user.uid;
+                    var providerData = user.providerData;
+                    user.getToken().then(function(accessToken) {
+                        document.getElementById('name').innerText = displayName;
+                        document.getElementById('name').setAttribute('title', JSON.stringify(user, null, '  '));
+                        document.getElementById('email').innerText = email;
+
+                        MRC.initSiteID(email);
+                    });
+                } else {
+                    // User is signed out.
+                    document.getElementById('sign-in-status').textContent = 'Signed out';
+                    document.getElementById('sign-in').textContent = 'Sign in';
+                    document.getElementById('account-details').textContent = 'null';
+                }
+            }, function(error) {
+                console.log(error);
+            });
+        };
+
+        window.addEventListener('load', function() {
+            initApp()
+        });
+    </script>
+
+    <script type="text/javascript">
+        var database = firebase.database();
+    </script>
+
+    <link rel="stylesheet" href="js/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/jquery.ptTimeSelect.css">
+    <link rel="stylesheet" href="css/c3.min.css" type="text/css">
+</head>
+
+<body>
+    <div class="backgroundDiv" style="background-color: lightblue; min-height: 100vh;">
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em; position: relative">
+            <div class="alert" id="alert" style="display: none; top: 5px; z-index: 1000; position: fixed"> <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                <div style="display: inline-block; text-align: left"> <span id="alertMessage"></span> </div>
+            </div>
+            <div class="nomobile" style="position: absolute; left: 1em;"> <img src="logo_top.gif" border="0" width="140"> <img src="dolphin.gif" border="0" height="58" width="105" style="position: absolute; left: 1em; top: .5em"> </div>
+            <h1 class="nomobile">Enter Water Quality Data</h1>
+            <h1 class="mobile">Water Quality</h1>
+            <h1 class="mobile">Data Entry</h1>
+            <div class="nomobile" style="width: 100%; text-align: center; padding-top: 1em;"> <em style="background-color: yellow; padding: .5em; border-radius: 7px">Please do not use this form for QA data entry</em> </div>
+        </div>
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em;">
+            <div style="width: 100%; display: table">
+                <div class="row">
+                    <div class="leftColumn"> <strong class="label2">Name: </strong> </div>
+                    <div class="rightColumn">
+                        <label class="input" id="name" name="name">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"> <strong class="label2">E-Mail: </strong> </div>
+                    <div class="rightColumn">
+                        <label class="input" id="email" name="email">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em;">
+            <div style="width: 100%; display: table">
+                <div class="row">
+                    <div class="leftColumn"> <strong class="label2">Site: </strong> </div>
+                    <div class="rightColumn">
+                        <select class="input" id="site_code" name="site_code" style="width: 5em" title="Select the 2-letter code of your site">
+                            <option selected disabled hidden style="display: none" value=""></option>
+                            <option value="ML-">ML</option>
+                            <option value="BR-">BR</option>
+                            <option value="NL-">NL</option>
+                            <option value="CL-">CL</option>
+                            <option value="SL-">SL</option>
+                        </select>
+                        <input class="input siteNo" name="site_no_field" id="site_no_field" size="4" maxlength="4" type="number" onblur="MRC.validateSiteNumber()" title="Enter the 4-digit numerical code (eg: 2340).">
+                        <input class="input sampleLoc" name="site_sample_loc" id="site_sample_loc" size="2" maxlength="2" type="number" onblur="MRC.validateSampleLocation()" title="Enter your 2 digit sample location">
+                        <input id="site_no" name="site_no" style="display: none" type="text">
+                        <button id="siteList" type="button" class="littleButton" onclick="window.open('http://www.mrcirl.org/water/wq_site.html');">Site List</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"> <strong class="label2">Date: </strong> </div>
+                    <div class="rightColumn">
+                        <input class="input" id="date" type="text" onchange="MRC.dateUpdated(); MRC.loadRecord();" title="Select the month, day and year.">
+                        <input id="month" name="month" style="display: none" type="text">
+                        <input id="day" name="day" style="display: none" type="text">
+                        <input id="year" name="year" style="display: none" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"> <strong class="label2">Time: </strong> </div>
+                    <div class="rightColumn">
+                        <input class="input" id="timeField" type="text" onchange="MRC.timeUpdated()" onKeyDown="$.ptTimeSelect.closeCntr()" title="Enter the time when the measurements were collected">
+                        <input id="time" name="time" style="display: none" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><span class="label2"><strong>Air Temperature</strong> <sup>(C)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input" id="atemp" name="atemp" type="number" title="Enter the air temperature in °C with 1 decimal (eg: 29.0)." onblur="MRC.validateAirTemp()">
+                        <input class="littleButton" id="atemp_na" type="checkbox" tabindex="-1" onChange="MRC.naButtonClick('atemp_na', 'atemp'); MRC.validateAirTemp();">
+                        <label class="littleButton" for="atemp_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><span class="label2"><strong>Water Temperature</strong> <sup>(C)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input" id="wtemp" name="wtemp" type="number" title="Enter the water temperature in °C with 1 decimal (eg: 28.0)" onblur="MRC.validateWaterTemp()">
+                        <input class="littleButton" id="wtemp_na" type="checkbox" tabindex="-1" onChange="MRC.naButtonClick('wtemp_na', 'wtemp'); MRC.validateWaterTemp();">
+                        <label class="littleButton" for="wtemp_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><span class="label2"><strong>Water Depth</strong> <sup>(m)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input" id="depth" name="depth" type="number" title="Enter the Water depth in meter with 1 decimal (eg: 2.1)." onblur="MRC.validateWaterDepth()">
+                        <input class="littleButton" id="depth_na" type="checkbox" tabindex="-1" onChange="MRC.naButtonClick('depth_na', 'depth'); MRC.validateWaterDepth();">
+                        <label class="littleButton" for="depth_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><span class="label2"><strong>Secchi Depth</strong> <sup>(m)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input secchi" id="secchi" name="secchi" type="number" onblur="MRC.validateSecchi()" title="Enter the secchi depth in meter with 1 decimal (eg: 1.3), or select VAB for 'Visible At Bottom'">
+                        <input class="littleButton" id="secchi_vab" type="checkbox" style="width: 2em" onChange="MRC.secchiButtonClick();">
+                        <label class="littleButton" for="secchi_vab">VAB</label>
+                        <input class="littleButton" id="secchi_na" type="checkbox" tabindex="-1" onChange="MRC.secchiButtonClick();">
+                        <label class="littleButton" for="secchi_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><span class="label2"><strong>Salinity</strong> <sup>(ppt)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input" id="salinity" name="salinity" type="number" onblur="MRC.validateSalinity()" title="Enter the Salinity in ppt with 1 decimal (eg: 09.8).">
+                        <input class="littleButton" id="salinity_na" type="checkbox" tabindex="-1" onChange="MRC.naButtonClick('salinity_na', 'salinity'); MRC.validateSalinity();">
+                        <label class="littleButton" for="salinity_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><strong class="label2">pH: </strong></div>
+                    <div class="rightColumn">
+                        <input class="input" id="ph" name="ph" type="number" onblur="MRC.validatePh()" title="Enter the pH with 1 decimal (eg: 8.2)">
+                        <input class="littleButton" id="ph_na" type="checkbox" tabindex="-1" onChange="MRC.naButtonClick('ph_na', 'ph')">
+                        <label class="littleButton" for="ph_na">N/A</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><strong class="label2">Weather: </strong></div>
+                    <div class="rightColumn">
+                        <select class="input" id="weather" name="weather" title="Select the weather code from the available options.
+          Select N/A if the value is not available.">
+                            <option value="1">Clear</option>
+                            <option value="2">Partly Cloudy</option>
+                            <option value="3">Overcast</option>
+                            <option value="4">Fog / Haze</option>
+                            <option value="5">Drizzle</option>
+                            <option value="6">Intermittent Rain</option>
+                            <option value="7">Rain</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><strong class="label2">Water Surface: </strong></div>
+                    <div class="rightColumn">
+                        <select class="input" id="surface" name="surface" title="Select the water surface code from the available options.
+          Select N/A if the value is not available.">
+                            <option value="1">Calm</option>
+                            <option value="2">Water Ripples</option>
+                            <option value="3">Waves</option>
+                            <option value="4">White Caps</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><strong class="label2">Water Color: </strong></div>
+                    <div class="rightColumn">
+                        <select class="input" id="color" name="color" title="Select the water color code from the available options.
+          Select N/A if the value is not available.">
+                            <option value="1">Normal</option>
+                            <option value="2">Abnormal</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"><strong class="label2">Wind Direction: </strong></div>
+                    <div class="rightColumn">
+                        <select class="input" id="wind" name="wind" title="Select the wind direction (eg. Select NW if the wind is blowing from the North West)
+          Select N/A if the value is not available.">
+                            <option value="N">From the North</option>
+                            <option value="NE">From the NorthEast</option>
+                            <option value="E">From the East</option>
+                            <option value="SE">From the SouthEast</option>
+                            <option value="S">From the South</option>
+                            <option value="SW">From the SouthWest</option>
+                            <option value="W">From the West</option>
+                            <option value="NW">From the NorthWest</option>
+                            <option value="Calm">Calm</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn"> <span class="label2"><strong>Dissolved Oxygen</strong> <sup>(average, mg/l)</sup><strong>:</strong></span></div>
+                    <div class="rightColumn">
+                        <input class="input" id="do" name="do" type="number" onblur="MRC.validateDo()" title="Enter the average Dissolved Oxygen Concentration (D.O.) in mg/l, with 2 decimals (eg: 6.50). Click on 'Calculate Average' if needed.">
+                        <input class="littleButton" id="do_na" type="checkbox" style="width: 3em" tabindex="-1" onChange="MRC.naButtonClick('do_na', 'do'); MRC.validateDo(); $('#do_ave').prop('disabled', $(this).prop('checked')); $('do_ave').button('refresh')">
+                        <label class="littleButton" for="do_na">N/A</label>
+                        <br>
+                        <em class="label">1st Reading: </em>
+                        <input class="input" style="width: 7em" id="do1" type="number">
+                        <br>
+                        <em class="label">2nd Reading: </em>
+                        <input class="input" style="width: 7em" id="do2" type="number">
+                        <br>
+                        <button class="littleButton" id="do_ave" type="button" onclick="MRC.calculateAverage()">Calculate Average</button>
+                        <br>
+                        <input id="dosat" name="dosat" style="display: none" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="leftColumn" style="vertical-align: top"><span class="label2"><strong>Comments</strong> <sup>(optional)</sup><strong>: </strong></span></div>
+                    <div class="rightColumn" style="padding-top: 1em">
+                        <textarea style="width: 90%" class="input" id="comments" name="comments" rows="4" cols="50"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div style="width: 100%; text-align: center;">
+                <div class="nomobile" style="padding: 1em"> <em>Mouse over any input field for help.</em> </div>
+                <button id="confirmButton" type="button">Submit</button>
+            </div>
+            <div id="chart"></div>
+        </div>
+        <div id="confirmation" title="Confirm Submission of Data" style="display: table">
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Name:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="firstNameConfirm"></span> <span id="lastNameConfirm"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Site ID:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="siteCodeConfirm"></span><span id="siteNoConfirm"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Date:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="dateConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Time:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="timeConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Air Temperature:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="airTempConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Water Temperature:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="waterTempConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Water Depth:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="waterDepthConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Secchi Depth:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="secchiDepthConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Salinity:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="salinityConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">pH:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="phConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Weather:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="weatherConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Water Surface:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="waterSurfaceConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Water Color:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="waterColorConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Wind Direction</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="windDirectionConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Dissolved Oxygen:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="doConfirm"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="leftColumn">
+                    <strong class="label2">Dissolved Percent:</strong>
+                </div>
+                <div class="rightColumn">
+                    <span id="psatConfirm"></span>
+                </div>
+            </div>
+            <strong class="label2">Comments:</strong>
+            <br>
+            <span class="label2" id="commentsConfirm"></span>
+            <br>
+        </div>
+    </div>
+    <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="js/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+    <script src="js/jquery.ptTimeSelect.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/base64.min.js"></script>
+    <script src="js/d3.min.js" charset="utf-8"></script>
+    <script src="js/c3.min.js"></script>
+</body>
+
+</html>

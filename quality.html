@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRC Water Quality Input</title>
+    <link rel="stylesheet" href="js/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/jquery.ptTimeSelect.css">
+    <style>
+        .whiteDiv {
+            text-align: center;
+            background-color: white;
+            border-radius: .5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="backgroundDiv" style="background-color: lightblue; min-height: 100vh;" data-bind="event:{keydown:alert.clear},visible:true" style="display:none">
+        <form novalidate id="waterData" method="POST" action="cgi-bin/quality.cgi" data-bind="submit:confirm">
+            <div class="whiteDiv" style="position: relative">
+                <div class="alert" style="display: none; top: 5px; z-index: 1000; position: fixed" data-bind="visible:alert.message">
+                    <span class="closebtn" data-bind="click:alert.clear">&times;</span>
+                    <div style="display: inline-block; text-align: left"> 
+                        <span data-bind="text:alert.message"></span> 
+                    </div>
+                </div>
+                <div class="nomobile" style="position: absolute; left: 1em;">
+                    <img src="pictures/logo_top.gif" border="0" width="140">
+                    <img src="pictures/dolphin.gif" border="0" height="58" width="105" style="position: absolute; left: 1em; top: .5em">
+                </div>
+                <h1 class="nomobile">Enter Water QC Data</h1>
+                <h1 class="mobile">Water QC</h1>
+                <h1 class="mobile">Data Entry</h1>
+                <div class="nomobile" style="width: 100%; text-align: center; padding-top: 1em;">
+                    <em style="background-color: yellow; padding: .5em; border-radius: 7px">Please do not use this form for Water Quality data entry</em>
+                </div>
+            </div>
+            <div class="whiteDiv">
+                <div style="width: 100%; display: table">
+                    <!-- First Name -->
+                    <div class="row">
+                        <div class="leftColumn">
+                            <label class="label2" for="first" data-bind="validationElement:first">First Name:</label>
+                        </div>
+                        <div class="rightColumn" title="Enter your first name">
+                            <input class="input" id="first" name="first" type="text" data-bind="value:first">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:first"></div>
+                    </div>
+                    <!-- Last Name -->
+                    <div class="row">
+                        <div class="leftColumn">
+                             <label class="label2" for="last" data-bind="validationElement:last">Last Name:</label>
+                        </div>
+                        <div class="rightColumn" title="Enter your last name">
+                            <input class="input" id="last" name="last" type="text" data-bind="value:last">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:last"></div>
+                    </div>
+                    <!-- Password -->
+                    <div class="row">
+                        <div class="leftColumn">
+                            <label for="password" class="label2" data-bind="validationElement:password">Password:</label>
+                        </div>
+                        <div class="rightColumn" title="Enter your password">
+                            <input class="input" id="password" type="password" data-bind="value:password">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:password"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="whiteDiv">
+                <div style="width: 100%; display: table">
+                    <!-- site code, site number, site location -->
+                    <div class="row" data-bind="with:site">
+                        <div class="leftColumn">
+                            <label for="code" class="label2" data-bind="css:{'has-error':hilight}">Site:</label>
+                            <input name="site_no" type="hidden" data-bind="value:value">
+                        </div>
+                        <div class="rightColumn">
+                            <span data-bind="validationElement:code">
+                                <select class="input" id="code" name="site_code" style="width: 5em" 
+                                    title="Select the 2-letter code of your site"
+                                    data-bind="options:codes,optionsText:'k',optionsValue:'v',optionsCaption:'',value:code">
+                                </select>
+                            </span>
+                            <input class="input siteNo" size="4" maxlength="4" type="number" 
+                                title="Enter the 4-digit numerical code (eg: 2340)."
+                                data-bind="value:number">
+                            <input class="input sampleLoc" size="2" maxlength="2" type="number" 
+                                title="Enter your 2 digit sample location"
+                                data-bind="value:location">
+                            <a href='http://www.mrcirl.org/water/wq_site.html' 
+                                class="littleButton" target="list" data-bind="button:{}">
+                                Site List
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row" data-bind="if:site.hilight">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="with:site">
+                            <p data-bind="validationMessage:code"></p>
+                            <p data-bind="validationMessage:number"></p>
+                            <p data-bind="validationMessage:location"></p>
+                        </div>
+                    </div> 
+                    <!-- Date -->
+                    <div class="row" data-bind="with:date">
+                        <div class="leftColumn">
+                            <label for="dateInput" data-bind="validationElement:input">Date:</label>
+                            <input name="month" type="hidden" data-bind="value:month">
+                            <input name="day" type="hidden" data-bind="value:day">
+                            <input name="year" type="hidden" data-bind="value:year">
+                        </div>
+                        <div class="rightColumn" 
+                            title="Select the month, day and year sample was collected.">
+                            <input class="input" id="dateInput" type="text" data-bind="datepicker:input">
+                        </div>
+                    </div>
+                    <div class="row" data-bind="with:date">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:input"></div>
+                        <div class="has-warning" data-bind="visible:warning,text:warning"></div>
+                    </div>
+                    <!-- Time -->
+                    <div class="row" data-bind="with:time">
+                        <div class="leftColumn">
+                            <label for="timeInput" data-bind="validationElement:input">Time:</label>
+                            <input name="time" type="hidden" data-bind="value:value">
+                        </div>
+                        <div class="rightColumn">
+                            <input class="input" type="text" id="timeInput" 
+                                title="Enter the time when the measurements were collected"
+                                data-bind="timepicker:input">
+                        </div>
+                    </div>
+                    <div class="row" data-bind="with:time">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:input"></div>
+                    </div>
+                    <!-- Kit Number -->
+                    <div class="row">
+                        <div class="leftColumn">
+                            <label for="kitNumber" data-bind="validationElement:kitNumber">Kit Number</label>
+                        </div>
+                        <div class="rightColumn">
+                            <input class="input" type="text" id="kitNumber" name="kitNumber" 
+                                title="Enter the number associated with your water quality kit"
+                                data-bind="value:kitNumber">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:kitNumber"></div>
+                    </div>
+                    <!-- Sampe ID -->
+                    <div class="row">
+                        <div class="leftColumn">
+                            <label for="sampleId" data-bind="validationElement:sampleId">Sample ID</label>
+                        </div>
+                        <div class="rightColumn">
+                            <input class="input" type="text" id="sampleId" name="sampleId" 
+                                title="Enter the number associated with your water quality kit"
+                                data-bind="value:sampleId">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:sampleId"></div>
+                    </div>
+                    <!-- Salinity -->
+                    <div class="row" data-bind="with:salinity">
+                        <div class="leftColumn">
+                            <label class="label2" for="in-salinity" data-bind="validationElement:input">Salinity<sup> (ppt)</sup>:</label>
+                            <input type="hidden" name="salinity" data-bind="value:value">
+                        </div>                            
+                        <div class="rightColumn">
+                            <input class="input" id="in-salinity" type="number" min="0" max="40"
+                                title="Enter the Salinity in ppt with 1 decimal (eg: 09.8)."
+                                data-bind="visible:!isNA(),value:input">
+                            <input class="input" type="text" disabled
+                                title="Click the N/A button to enable editing." 
+                                data-bind="visible:isNA(),value:value">
+                            <input class="littleButton" id="na-salinity" type="checkbox" tabindex="-1"
+                                data-bind="checked:isNA,button:{}">
+                            <label class="littleButton" for="na-salinity">N/A</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:salinity.input"></div>
+                    </div>
+                    <!-- pH -->
+                    <div class="row" data-bind="with:ph">
+                        <div class="leftColumn">
+                            <label for="phInput" data-bind="validationElement:input">pH:</label>
+                            <input type="hidden" name="ph" data-bind="value:value">
+                        </div>
+                        <div class="rightColumn">
+                            <input class="input" id="in-ph" type="number" min="1" max="14" step=".1" 
+                                title="Enter the pH with 1 decimal (eg: 8.2)" 
+                                data-bind="visible:!isNA(),value:input">
+                            <input class="input" type="text" disabled
+                                title="Click the N/A button to enable editing." 
+                                data-bind="visible:isNA(),value:value">
+                            <input class="littleButton" id="na-ph" type="checkbox" tabindex="-1" 
+                                data-bind="checked:isNA,button:{}">
+                            <label class="littleButton" for="na-ph">N/A</label>
+                        </div>
+                    </div>
+                    <div class="row" data-bind="with:ph">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:input"></div>
+                        <div class="has-warning" data-bind="visible:warning,text:warning"></div>
+                    </div>
+                    <!-- Effort -->
+                    <div class="row">
+                        <div class="leftColumn">
+                            <label for="effort" data-bind="validationElement:effort">Effort <sup>(hrs)</sup>:</label>
+                        </div>
+                        <div class="rightColumn">
+                            <input class="input" id="effort" name="effort" type="number" min="0.25" max="8.00" step="0.25" 
+                                title="Enter time to perform tests in hours. (15 min = 0.25 hrs)"
+                                data-bind="value:effort">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:effort"></div>
+                    </div>
+                    <!-- Comments -->
+                    <div class="row" data-bind="with:comments">
+                        <div class="leftColumn" style="vertical-align: top">
+                            <label for="comments">Comments <sup>(optional)</sup></label>
+                            <input type="hidden" name="comments" data-bind="value:value">
+                        </div>
+                        <div class="rightColumn">
+                            <textarea style="width: 90%" class="input" id="comments" rows="4" cols="50" 
+                                data-bind="value:input"></textarea>
+                        </div>
+                    </div>
+                    <div class="row" data-bind="with:comments">
+                        <div class="leftColumn"></div>
+                        <div class="has-error" data-bind="validationMessage:input"></div>
+                    </div>
+                </div>
+                <div style="width:100%; text-align: center;">
+                    <div class="nomobile" style="padding: 1em"> <em>Mouse over any input field for help.</em> </div>
+                    <button type="button" data-bind="click:confirm,button:{}">Submit</button>
+                </div>
+            </div>
+
+            <div id="confirmation" title="Confirm Submission of Data" style="display:none">
+                <!-- First Name Last Name -->
+                <div class="row">
+                    <div class="leftColumn">
+                        <strong class="label2">Name:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:(first()+' '+last())"></span>
+                    </div>
+                </div>
+                <!-- Site Code, Site Number, Site Location -->
+                <div class="row" data-bind="with:site">
+                    <div class="leftColumn">
+                        <strong class="label2">Site ID:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:(code()+value())"></span>
+                    </div>
+                </div>
+                <!-- Date -->
+                <div class="row" data-bind="with:date,attr:{title:date.warning}">
+                    <div class="leftColumn">
+                        <strong class="label2">Date:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:display"></span>
+                        <span class="has-warning" data-bind="visible:warning">&nbsp;<strong>(!)</strong></span>
+                    </div>
+                </div>
+                <!-- Time -->
+                <div class="row">
+                    <div class="leftColumn">
+                        <strong class="label2">Time:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:time.input"></span>
+                    </div>
+                </div>
+                <!-- Salinity --> 
+                <div class="row">
+                    <div class="leftColumn">
+                        <strong class="label2">Salinity:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:salinity.value"></span>
+                    </div>
+                </div>
+                <!-- ph -->
+                <div class="row" data-bind="with:ph,attr:{title:ph.warning}">
+                    <div class="leftColumn">
+                        <strong class="label2">pH:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:value"></span>
+                        <span class="has-warning" data-bind="visible:warning">&nbsp;<strong>(!)</strong></span>
+                    </div>
+                </div>
+                <!-- Effort -->
+                <div class="row">
+                    <div class="leftColumn">
+                        <strong class="label2">Effort:</strong>
+                    </div>
+                    <div class="rightColumn">
+                        <span data-bind="text:effort"></span>
+                    </div>
+                </div>
+                <!-- Comments -->
+                <strong class="label2">Comments:</strong>
+                <br>
+                <span class="label2" data-bind="text:comments.input"></span>
+                <br>
+            </div>
+        </form>
+    </div>
+    <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="js/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+    <script src="js/jquery.ptTimeSelect.js"></script>
+    <script src="js/knockout-3.4.1.js"></script>
+    <script src="js/knockout.validation.min.js"></script>
+    <script src="js/button-bindinghandler.js"></script> 
+    <script src="js/datepicker-bindinghandler.js"></script>
+    <script src="js/timepicker-bindinghandler.js"></script> 
+    <script src="js/quality.js"></script>
+</body>
+</html>

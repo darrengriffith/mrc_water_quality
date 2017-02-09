@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRC Water Quality Input</title>
+
+    <script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyA3_egJMbPeKz2HgA21gnLdR941Nvjjhow",
+            authDomain: "waterquality-1920b.firebaseapp.com",
+            databaseURL: "https://waterquality-1920b.firebaseio.com",
+            storageBucket: "waterquality-1920b.appspot.com",
+            messagingSenderId: "1029265855891"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.css" />
+    <script type="text/javascript">
+        // FirebaseUI config.
+        var uiConfig = {
+            signInSuccessUrl: 'dataEntry.html',
+            signInOptions: [
+                // Leave the lines as is for the providers you want to offer your users.
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                firebase.auth.EmailAuthProvider.PROVIDER_ID
+            ]
+            // Terms of service url.
+            //tosUrl: '<your-tos-url>'
+        };
+
+        // Initialize the FirebaseUI Widget using Firebase.
+        var ui = new firebaseui.auth.AuthUI(firebase.auth());
+        // The start method will wait until the DOM is loaded.
+        ui.start('#firebaseui-auth-container', uiConfig);
+    </script>
+
+    <link rel="stylesheet" href="js/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/jquery.ptTimeSelect.css">
+</head>
+
+<body>
+    <div class="backgroundDiv" style="background-color: lightblue; min-height: 100vh;">
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em; position: relative">
+            <div class="nomobile" style="position: absolute; left: 1em;"> <img src="http://www.mrcirl.org/pictures/logo_top.gif" border="0" width="140"> <img src="http://www.mrcirl.org/pictures/dolphin.gif" border="0" height="58" width="105" style="position: absolute; left: 1em; top: .5em"> </div>
+            <h1 class="nomobile">Enter Water Quality Data</h1>
+            <h1 class="mobile">Water Quality</h1>
+            <h1 class="mobile">Data Entry</h1>
+            <div class="nomobile" style="width: 100%; text-align: center; padding-top: 1em;"> <em style="background-color: yellow; padding: .5em; border-radius: 7px">Please do not use this form for QA data entry</em> </div>
+        </div>
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em;">
+            <div id="firebaseui-auth-container"></div>
+        </div>
+        <div class="whiteDiv" style="text-align: center; background-color: white; border-radius: .5em;">
+        </div>
+    </div>
+</body>
+
+</html>

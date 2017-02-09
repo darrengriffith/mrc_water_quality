@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRC Water Quality Input</title>
+
+    <script src="https://www.gstatic.com/firebasejs/3.6.2/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyA3_egJMbPeKz2HgA21gnLdR941Nvjjhow",
+            authDomain: "waterquality-1920b.firebaseapp.com",
+            databaseURL: "https://waterquality-1920b.firebaseio.com",
+            storageBucket: "waterquality-1920b.appspot.com",
+            messagingSenderId: "1029265855891"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/1.0.0/firebaseui.css" />
+
+    <script type="text/javascript">
+        var email = "";
+        initApp = function() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in.
+                    var displayName = user.displayName;
+                    email = user.email;
+                    var emailVerified = user.emailVerified;
+                    var photoURL = user.photoURL;
+                    var uid = user.uid;
+                    var providerData = user.providerData;
+                    user.getToken().then(function(accessToken) {
+
+                    });
+                } else {
+                    // User is signed out.
+
+                }
+            }, function(error) {
+                console.log(error);
+            });
+        };
+
+        window.addEventListener('load', function() {
+            initApp()
+        });
+    </script>
+
+    <script type="text/javascript">
+        var database = firebase.database();
+        firebase.database().ref('/observations').once('value').then(function(snapshot) {
+
+            var csv = "";
+
+            console.log(snapshot.val())
+
+            // Add column headers
+            var firstTime = true;
+            var firstChild = snapshot.val()[Object.keys(snapshot.val())[0]];
+            for (var x in firstChild){
+                if(!firstTime) {
+                    csv += ",";
+                }
+                firstTime = false;
+
+                csv += x;
+            }
+            csv += "\n";
+
+            for(var y in snapshot.val()) {
+                firstTime = true;
+                for(z in firstChild) {
+                    if(!firstTime) {
+                        csv += ",";
+                    }
+                    firstTime = false;
+
+                    csv += snapshot.val()[y][z];
+                }
+                csv += "\n";
+            }
+            document.getElementById('csv').innerText = csv;
+
+        });
+    </script>
+
+    <link rel="stylesheet" href="js/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/jquery.ptTimeSelect.css">
+</head>
+
+<body>
+    <div id="csv"></div>
+
+</body>
+
+</html>

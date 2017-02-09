@@ -1,0 +1,19 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "observations": {
+      ".read": true,
+      "$siteID": {
+        "$dateStr" : {
+          ".write": "root.child('sites/' + newData.child('siteID').val() + '/owner').val() === auth.token.email"
+        }
+      }
+    },
+    "users" : {
+      "$userID": {
+        ".read": "data.child('email').val() === auth.token.email"
+      }
+    }
+  }
+}
